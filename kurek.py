@@ -14,9 +14,9 @@ parser = argparse.ArgumentParser(
           888  `88b.   `88.    .8'   888  `88b.   888       o  888  `88b.
          o888o  o888o    `YbodP'    o888o  o888o o888ooooood8 o888o  o888o
 
-    Pobierz media z profili na zbiornik.com
+    Pobierz media z profilów na zbiornik.com
 
-    Skrypt pozwala na masowe pobieranie zdjęć i filmów profili zarejestrowanych
+    Skrypt pozwala na masowe pobieranie zdjęć i filmów profilów zarejestrowanych
     na zbiornik.com.
     Używa bibliotek opartych na asyncio, dzięki czemu media pobierane są
     bardzo szybko i równolegle. Wymagane jest konto na portalu. Media pobierane
