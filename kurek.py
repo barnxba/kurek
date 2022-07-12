@@ -40,7 +40,20 @@ parser.add_argument('-p', '--pass',
                     metavar='PASSWORD',
                     required=True,
                     help='hasło użytkownika')
+parser.add_argument('profiles',
+                    nargs='*',
+                    type=str,
+                    metavar='PROFILE',
+                    help="nazwa profilu do ściągnięcia")
+parser.add_argument('-f', '--file',
+                    nargs=1,
+                    type=str,
+                    metavar='FILE',
+                    help="Plik z listą nazw profilów")
+
 args = parser.parse_args()
+if not args.profiles and not args.file:
+    parser.error("podaj nazwy profilów lub ścieżkę do pliku za pomocą --file")
 
 user = User(args.email, args.password)
 user.login()
