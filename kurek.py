@@ -55,5 +55,14 @@ args = parser.parse_args()
 if not args.profiles and not args.file:
     parser.error("podaj nazwy profilów lub ścieżkę do pliku za pomocą --file")
 
+file_profiles = []
+if args.file:
+    filename = args.file[0]
+    with open(filename, 'r') as file:
+        file_profiles = file.read().splitlines()
+        if not file_profiles:
+            parser.error(f'plik {filename} jest pusty')
+profiles = sorted([*args.profiles, *file_profiles], key=lambda s: s.lower())
+
 user = User(args.email, args.password)
 user.login()
