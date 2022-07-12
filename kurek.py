@@ -40,21 +40,31 @@ parser.add_argument('-p', '--pass',
                     metavar='PASSWORD',
                     required=True,
                     help='hasło użytkownika')
+parser.add_argument('-f', '--file',
+                    nargs=1,
+                    type=str,
+                    metavar='FILE',
+                    help="plik z listą nazw profilów")
+exclude_media = parser.add_mutually_exclusive_group()
+exclude_media.add_argument('-g', '--gallery',
+                    dest='only_gallery',
+                    action='store_true',
+                    help="ściągnij tylko zdjęcia")
+exclude_media.add_argument('-m', '--movies',
+                    dest="only_movies",
+                    action='store_true',
+                    help="ściągnij tylko filmy")
 parser.add_argument('profiles',
                     nargs='*',
                     type=str,
                     metavar='PROFILE',
                     help="nazwa profilu do ściągnięcia")
-parser.add_argument('-f', '--file',
-                    nargs=1,
-                    type=str,
-                    metavar='FILE',
-                    help="Plik z listą nazw profilów")
 
 args = parser.parse_args()
 if not args.profiles and not args.file:
     parser.error("podaj nazwy profilów lub ścieżkę do pliku za pomocą --file")
 
+# consolidate profile names
 file_profiles = []
 if args.file:
     filename = args.file[0]
