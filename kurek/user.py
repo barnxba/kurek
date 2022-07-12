@@ -1,4 +1,5 @@
 from .site import Site
+from .ajax import Ajax
 
 
 class User:
@@ -7,6 +8,7 @@ class User:
         self._password = password
         self._nick = None
         self._token = None
+        self._ajax = None
 
     @property
     def email(self):
@@ -27,11 +29,13 @@ class User:
     def login(self):
         site = Site()
         ltoken = site.get_tag_property_by_id('zbiornik-ltoken')
-        command_json = site.build_command_login_json(self.email,
+        ajax = Ajax()
+        command_json = ajax.build_command_login_json(self.email,
                                                      self.password,
                                                      ltoken)
-        response_json = site.ajax_get_request(command_json)
+        response_json = ajax.get_request(command_json)
         self._token = response_json['token']
         self._nick = response_json['loggedUser']['nick']
 
+        self._ajax = ajax
         print(f'User {self.nick} logged in. [token: {self.token}]')
