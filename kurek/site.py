@@ -7,8 +7,8 @@ from . import config
 
 class Site:
     def __init__(self):
-        self._url = yarl.URL.build(scheme=config.scheme,
-                                   host=config.host)
+        self._url = str(yarl.URL.build(scheme=config.scheme,
+                                       host=config.host))
 
     def _get_html_text(self):
         with requests.get(self._url,

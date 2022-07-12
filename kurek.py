@@ -1,6 +1,7 @@
 import argparse
 
 from kurek.user import User
+from kurek import config
 
 
 parser = argparse.ArgumentParser(
@@ -73,6 +74,8 @@ if args.file:
         if not file_profiles:
             parser.error(f'plik {filename} jest pusty')
 profiles = sorted([*args.profiles, *file_profiles], key=lambda s: s.lower())
+
+config.arguments = args
 
 user = User(args.email, args.password)
 user.login()

@@ -30,12 +30,8 @@ class User:
         site = Site()
         ltoken = site.get_tag_property_by_id('zbiornik-ltoken')
         ajax = Ajax()
-        command_json = ajax.build_command_login_json(self.email,
-                                                     self.password,
-                                                     ltoken)
-        response_json = ajax.get_request(command_json)
-        self._token = response_json['token']
-        self._nick = response_json['loggedUser']['nick']
-
+        response = ajax.login(self.email, self.password, ltoken)
+        self._token = response['token']
+        self._nick = response['loggedUser']['nick']
         self._ajax = ajax
         print(f'User {self.nick} logged in. [token: {self.token}]')
