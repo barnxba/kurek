@@ -1,3 +1,6 @@
+from yarl import URL
+
+
 class Photo:
     def __init__(self, json):
         self.json = json
@@ -11,3 +14,22 @@ class Photo:
         key = size2key[sorted_sizes[0]]
         url = self.json[key]
         return url
+
+    @property
+    def nick(self):
+        return self.json['nick']
+
+    @property
+    def id_hash(self):
+        return self.json['lData']
+
+    @property
+    def title(self):
+        return self.json['title']
+
+    @property
+    def ext(self):
+        return URL(self.url).parts[-1][-3:]
+
+def generator(json):
+    return (Photo(photo_json) for photo_json in json)

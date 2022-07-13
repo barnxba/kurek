@@ -1,5 +1,3 @@
-import asyncio
-
 from yarl import URL
 
 from .balancer import Balancer
@@ -71,13 +69,17 @@ class Ajax:
         url = AjaxCommand(self.url).login(email, password, ltoken)
         json = await self.get(url, callback)
 
-    async def get_profile_photos(self, profiles, token, callback):
-        urls = (
-            AjaxCommand(self.url).get_profile_photos(nick, token)
-            for nick in profiles
-        )
-        tasks = (self.get(url, callback) for url in urls)
-        await asyncio.gather(*tasks)
+    async def get_profile_photos(self, nick, token, callback):
+        url = AjaxCommand(self.url).get_profile_photos(nick, token)
+        await self.get(url, callback)
+
+    async def get_profile_videos(self, nick, token, callback):
+        url = AjaxCommand(self.url).get_profile_videos(nick, token)
+        await self.get(url, callback)
+
+    async def get_video_info(self, data, ldata, token, callback):
+        url = AjaxCommand(self.url).get_video_info(data, ldata, token)
+        await self.get(url, callback)
 
     async def get(self, url, callback=None):
         async with self._session.api_limiter:
@@ -85,5 +87,14 @@ class Ajax:
                 response.raise_for_status()
                 json = await response.json(content_type=None)
         if callback is not None:
-            callback(self, json)
+            await callback(self, json)
         return json
+
+    async def download(self, url, callback=None):
+        async with self._session.download_limiter:
+            async with self._session.client.get(url) as response:
+                response.raise_for_status()
+                data = await response.read()
+        if callback is not None:
+            await callback(self, url, data)
+        return data
