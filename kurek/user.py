@@ -1,5 +1,6 @@
 from .site import Site
 from .ajax import Ajax
+from .photo import Photo
 
 
 class User:
@@ -48,3 +49,5 @@ class User:
 
     def _callback_get_profile_photos(self, caller, json):
         print(f"Downloaded pictures of: {json['items'][0]['nick']}")
+        for photo in (Photo(json) for json in json['items']):
+            print(photo.url)
