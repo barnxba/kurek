@@ -1,20 +1,33 @@
-import asyncio
+from asyncio import Semaphore
 
 from aiohttp import ClientSession
 
-from . import config
-
 
 class Session:
-    def __init__(self):
-        self._api_sem = asyncio.Semaphore(config.max_api_requests)
-        self._download_sem = asyncio.Semaphore(config.max_download_requests)
+    def __init__(self, api_limit=0, download_limit=0, headers=None):
+        self._api_limit = api_limit
+        self._download_limit = download_limit
+        self._client = None
+        self._api_semaphore = None
+        self._download_semaphore = None
+        self._headers = headers
 
-    def run(self, coroutine, params):
-        async def _run():
-            async with ClientSession(
-                    headers=config.request_headers
-                ) as session:
-                response = await coroutine(session, params)
-            return response
-        return asyncio.run(_run())
+    @property
+    def client(self):
+        return self._client
+
+    @property
+    def api_limiter(self):
+        return self._api_semaphore
+
+    @property
+    def download_limiter(self):
+        return self._download_semaphore
+
+    async def start(self):
+        self._client = ClientSession(headers=self._headers)
+        self._api_semaphore = Semaphore(self._api_limit)
+        self._download_semaphore = Semaphore(self._download_limit)
+
+    async def close(self):
+        await self._client.close()

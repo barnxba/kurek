@@ -1,29 +1,89 @@
-from .requests import RequestUrl
+import asyncio
+
+from yarl import URL
+
 from .balancer import Balancer
-from .session import Session
+
+
+class AjaxCommand:
+    def __init__(self, url):
+        self._url = url
+
+    def _get_request(self, params):
+        return str(URL(self._url) % params)
+
+    def login(self, email, password, ltoken):
+        params = {
+            'command': 'login',
+            'email': email,
+            'password': password,
+            'ltoken': ltoken
+        }
+        return self._get_request(params)
+
+    def get_profile_photos(self, nick, token):
+        params = {
+            'command': 'getProfilePhotos',
+            'nick': nick,
+            'actPath': f'/{nick}/photos',
+            'token': token
+        }
+        return self._get_request(params)
+
+    def get_profile_videos(self, nick, token):
+        params = {
+            'command': 'getProfileVideos',
+            'nick': nick,
+            'actPath': f'/{nick}/videos',
+            'token': token
+        }
+        return self._get_request(params)
+
+    def get_video_info(self, data, l_data, token):
+        params = {
+            'command': 'getItemInfo',
+            'data': data,
+            'actPath': f'/video/{l_data}',
+            'token': token
+        }
+        return self._get_request(params)
+
+    def get_photo_info(self, data, l_data, token):
+        params = {
+            'command': 'getItemInfo',
+            'data': data,
+            'actPath': f'/photo/{l_data}',
+            'token': token
+        }
+        return self._get_request(params)
 
 
 class Ajax:
-    def __init__(self):
+    def __init__(self, session):
         self._balancer = Balancer()
+        self._session = session
 
+    @property
     def url(self):
         return self._balancer.next_url()
 
-    def login(self, email, password, ltoken):
-        url = RequestUrl(self.url()).login(email, password, ltoken)
-        return Session().run(self._get, url)
+    async def login(self, email, password, ltoken, callback):
+        url = AjaxCommand(self.url).login(email, password, ltoken)
+        json = await self.get(url, callback)
 
-    def get_profile_photos(self, token, nick):
-        url = RequestUrl(self.url()).get_profile_photos(token, nick)
-        return Session().run(self._get, url)
+    async def get_profile_photos(self, profiles, token, callback):
+        urls = (
+            AjaxCommand(self.url).get_profile_photos(nick, token)
+            for nick in profiles
+        )
+        tasks = (self.get(url, callback) for url in urls)
+        await asyncio.gather(*tasks)
 
-    def get_profile_videos(self, token, nick):
-        url = RequestUrl(self.url()).get_profile_videos(token, nick)
-        return Session().run(self._get, url)
-
-    async def _get(self, session, url):
-        async with session.get(url) as response:
-            response.raise_for_status()
-            json = await response.json(content_type=None)
+    async def get(self, url, callback=None):
+        async with self._session.api_limiter:
+            async with self._session.client.get(url) as response:
+                response.raise_for_status()
+                json = await response.json(content_type=None)
+        if callback:
+            callback(self, json)
         return json
