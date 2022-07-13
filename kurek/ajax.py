@@ -84,6 +84,6 @@ class Ajax:
             async with self._session.client.get(url) as response:
                 response.raise_for_status()
                 json = await response.json(content_type=None)
-        if callback:
+        if callback is not None:
             callback(self, json)
         return json
