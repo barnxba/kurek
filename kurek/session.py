@@ -93,7 +93,8 @@ class Session:
     async def close(self):
         await self._client.close()
 
-    async def login(self, user: User):
+    async def login(self, email, password):
+        user = User(email, password)
         site = Site(self._client)
         ltoken = await site.get_tag_property_by_id('zbiornik-ltoken')
         url = self._ajax.login(user.email, user.password, ltoken)

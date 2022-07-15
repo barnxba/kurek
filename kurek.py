@@ -107,12 +107,11 @@ Używaj odpowiedzialnie!
     if args.dir_template:
         config.save_template = args.dir_template[0]
 
-    user = User(args.email, args.password)
     session = Session(config.max_api_requests,
                       config.max_download_requests,
                       config.request_headers)
     await session.start()
-    await session.login(user)
+    await session.login(args.email, args.password)
     await asyncio.gather(*(Profile(nick).download(session) for nick in profiles))
     await session.close()
 
