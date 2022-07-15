@@ -63,6 +63,12 @@ Używaj odpowiedzialnie!
                                dest="only_videos",
                                action='store_true',
                                help="ściągnij tylko filmy")
+    parser.add_argument('-d',
+                        '--root-dir',
+                        nargs=1,
+                        type=str,
+                        metavar='DIR',
+                        help=f'ścieżka zapisu (domyślnie: {config.save_dir})')
     parser.add_argument('profiles',
                         nargs='*',
                         type=str,
@@ -86,6 +92,8 @@ Używaj odpowiedzialnie!
 
     config.only_photos = args.only_photos
     config.only_videos = args.only_videos
+    if args.root_dir:
+        config.save_dir = args.root_dir[0]
 
     user = User(args.email, args.password)
     session = Session(config.max_api_requests,
