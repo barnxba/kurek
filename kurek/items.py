@@ -34,13 +34,20 @@ class UserItem:
         return self.json.entry['lData']
 
     @property
+    def ext(self):
+        return URL(self.url).parts[-1][-3:]
+
+    @property
     def filename(self):
         prefix = f'{self.title}_' if self.title else ''
         return f'{prefix}{self.uid}.{self.ext}'
 
     @property
-    def ext(self):
-        return URL(self.url).parts[-1][-3:]
+    def savepath(self):
+        template = config.save_template
+        return template.replace('%d', config.save_dir) \
+                       .replace('%t', self.type) \
+                       .replace('%p', self.owner)
 
     async def _fetch_json(self, session: Session):
         return dict()
@@ -50,7 +57,7 @@ class UserItem:
         self.json.details = json['item']
 
     async def download(self, session: Session):
-        path = f'{config.save_dir}/{self.owner}/{self.type}/{self.filename}'
+        path = os.path.join(self.savepath, self.filename)
         if os.path.exists(path):
             print(f'File {path} exists. Skipping.')
             return

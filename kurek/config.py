@@ -1,3 +1,5 @@
+import os
+
 host = 'zbiornik.com'
 scheme = 'https'
 api_servers = ('dzesika', 'brajanek', 'vaneska', 'denisek')
@@ -11,3 +13,4 @@ max_api_requests = 50
 only_photos = False
 only_videos = False
 save_dir = 'profiles'
+save_template = os.path.join('%d', '%p', '%t')

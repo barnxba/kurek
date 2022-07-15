@@ -68,7 +68,17 @@ Używaj odpowiedzialnie!
                         nargs=1,
                         type=str,
                         metavar='DIR',
-                        help=f'ścieżka zapisu (domyślnie: {config.save_dir})')
+                        help=f'folder zapisu ("{config.save_dir}")')
+    parser.add_argument('-t',
+                        '--dir-template',
+                        nargs=1,
+                        type=str,
+                        metavar='TEMPLATE',
+                        help="""wzorzec ścieżki zapisu ("%%d/%%p/%%t"):
+    %%d - root dir
+    %%p - nazwa profilu
+    %%t - typ pliku (photo/video)
+""")
     parser.add_argument('profiles',
                         nargs='*',
                         type=str,
@@ -94,6 +104,8 @@ Używaj odpowiedzialnie!
     config.only_videos = args.only_videos
     if args.root_dir:
         config.save_dir = args.root_dir[0]
+    if args.dir_template:
+        config.save_template = args.dir_template[0]
 
     user = User(args.email, args.password)
     session = Session(config.max_api_requests,
