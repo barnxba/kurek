@@ -9,7 +9,7 @@ from kurek.profile import Profile
 async def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description = """
+        description = '''
     oooo    oooo ooooo     ooo ooooooooo.   oooooooooooo oooo    oooo
     `888   .8P'  `888'     `8' `888   `Y88. `888'     `8 `888   .8P'
     888  d8'     888       8   888   .d88'  888          888  d8'
@@ -25,10 +25,10 @@ na zbiornik.com.
 Używa bibliotek opartych na asyncio, dzięki czemu media pobierane są
 bardzo szybko i równolegle. Wymagane jest konto na portalu. Media pobierane
 są w jakości zależnej od statusu konta użytkownika.
-        """,
-        epilog = """
+        ''',
+        epilog = '''
 Używaj odpowiedzialnie!
-        """
+        '''
     )
 
     parser.add_argument('-u',
@@ -51,18 +51,18 @@ Używaj odpowiedzialnie!
                         nargs=1,
                         type=str,
                         metavar='FILE',
-                        help="plik z listą nazw profilów")
+                        help='plik z listą nazw profilów')
     exclude_media = parser.add_mutually_exclusive_group()
     exclude_media.add_argument('-g',
                                '--gallery',
                                dest='only_photos',
                                action='store_true',
-                               help="ściągnij tylko zdjęcia")
+                               help='ściągnij tylko zdjęcia')
     exclude_media.add_argument('-v',
                                '--videos',
-                               dest="only_videos",
+                               dest='only_videos',
                                action='store_true',
-                               help="ściągnij tylko filmy")
+                               help='ściągnij tylko filmy')
     parser.add_argument('-d',
                         '--root-dir',
                         nargs=1,
@@ -74,20 +74,34 @@ Używaj odpowiedzialnie!
                         nargs=1,
                         type=str,
                         metavar='TEMPLATE',
-                        help="""wzorzec ścieżki zapisu ("%%d/%%p/%%t"):
+                        help='''wzorzec ścieżki zapisu [%%d/%%p/%%t]):
     %%d - root dir
     %%p - nazwa profilu
     %%t - typ pliku (photo/video)
-""")
+''')
+    parser.add_argument('-n',
+                        '--filename-template',
+                        nargs=1,
+                        type=str,
+                        metavar='TEMPLATE',
+                        help='''wzorzec nazwy pliku [%%t_%%h.%%e]):
+    %%t - tytuł
+    %%h - unikatowy hash pliku
+    %%e - rozszerzenie
+    %%o - nazwa właściciela
+    %%d - opis
+
+    Puste stringi zamieniane są znakiem '_'.
+''')
     parser.add_argument('profiles',
                         nargs='*',
                         type=str,
                         metavar='PROFILE',
-                        help="nazwa profilu do ściągnięcia")
+                        help='nazwa profilu do ściągnięcia')
 
     args = parser.parse_args()
     if not args.profiles and not args.file:
-        parser.error("podaj nazwy profilów lub użyj opcji --file")
+        parser.error('podaj nazwy profilów lub użyj opcji --file')
 
     # consolidate profile names
     file_profiles = []
@@ -106,6 +120,8 @@ Używaj odpowiedzialnie!
         config.save_dir = args.root_dir[0]
     if args.dir_template:
         config.save_template = args.dir_template[0]
+    if args.filename_template:
+        config.name_template = args.filename_template[0]
 
     session = Session(config.max_api_requests,
                       config.max_download_requests,

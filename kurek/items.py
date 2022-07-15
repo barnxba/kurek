@@ -26,6 +26,10 @@ class UserItem:
         return self.json.entry['nick']
 
     @property
+    def description(self):
+        return self.json.entry['description']
+
+    @property
     def title(self):
         return self.json.entry['title']
 
@@ -39,8 +43,19 @@ class UserItem:
 
     @property
     def filename(self):
-        prefix = f'{self.title}_' if self.title else ''
-        return f'{prefix}{self.uid}.{self.ext}'
+        template = config.name_template
+        subs = {
+            '%t': self.title,
+            '%h': self.uid,
+            '%e': self.ext,
+            '%d': self.description,
+            '%o': self.owner
+        }
+        for key, value in subs.items():
+            if not value:
+                value = '_'
+            template = template.replace(key, value)
+        return template
 
     @property
     def savepath(self):

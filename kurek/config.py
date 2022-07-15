@@ -14,3 +14,4 @@ only_photos = False
 only_videos = False
 save_dir = 'profiles'
 save_template = os.path.join('%d', '%p', '%t')
+name_template = '%t-%h.%e'
