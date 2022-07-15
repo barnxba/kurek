@@ -97,6 +97,18 @@ Używaj odpowiedzialnie!
 
     Puste stringi zamieniane są znakiem '_'.
 ''')
+    parser.add_argument('-a',
+                        '--api-limit',
+                        nargs=1,
+                        type=int,
+                        metavar='INT',
+                        help='limit zapytań API')
+    parser.add_argument('-l',
+                        '--download-limit',
+                        nargs=1,
+                        type=int,
+                        metavar='INT',
+                        help='limit jednoczesnych pobrań')
     parser.add_argument('profiles',
                         nargs='*',
                         type=str,
@@ -129,6 +141,10 @@ Używaj odpowiedzialnie!
         config.save_template = args.save_template[0]
     if args.name_template:
         config.name_template = args.name_template[0]
+    if args.api_limit:
+        config.max_api_requests = args.api_limit[0]
+    if args.download_limit:
+        config.max_download_requests = args.download_limit[0]
 
     log.debug(f'Run parameters:')
     log.debug(f'\tonly_photos: {config.only_photos}')
@@ -136,6 +152,8 @@ Używaj odpowiedzialnie!
     log.debug(f'\tsave_dir: {config.save_dir}')
     log.debug(f'\tsave_template: {config.save_template}')
     log.debug(f'\tname_template: {config.name_template}')
+    log.debug(f'\download_limit: {config.max_download_requests}')
+    log.debug(f'\tapi_limit: {config.max_api_requests}')
 
     session = Session(config.max_api_requests,
                       config.max_download_requests,
