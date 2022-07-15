@@ -1,5 +1,5 @@
-import argparse
 import asyncio
+import argparse
 
 from kurek import config
 from kurek.session import Session
@@ -69,7 +69,7 @@ Używaj odpowiedzialnie!
                         nargs=1,
                         type=str,
                         metavar='DIR',
-                        help=f'folder zapisu ("{config.save_dir}")')
+                        help=f'folder zapisu [{config.save_dir}]')
     parser.add_argument('-t',
                         '--dir-template',
                         dest='save_template',
@@ -94,7 +94,7 @@ Używaj odpowiedzialnie!
     %%o - nazwa właściciela
     %%d - opis
 
-    Puste stringi zamieniane są znakiem '_'.
+    Puste stringi zamieniane są na '_'.
 ''')
     parser.add_argument('-a',
                         '--api-limit',
@@ -129,7 +129,6 @@ Używaj odpowiedzialnie!
     profiles = sorted([*args.profiles, *file_profiles],
                       key=lambda s: s.lower())
 
-
     config.only_photos = args.only_photos
     config.only_videos = args.only_videos
     if args.save_dir:
@@ -142,12 +141,13 @@ Używaj odpowiedzialnie!
         config.max_api_requests = args.api_limit[0]
     if args.download_limit:
         config.max_download_requests = args.download_limit[0]
+    email, password = args.email[0], args.password[0]
 
     session = Session(config.max_api_requests,
                       config.max_download_requests,
                       config.request_headers)
     await session.start()
-    await session.login(args.email[0], args.password[0])
+    await session.login(email, password)
     await asyncio.gather(*(Profile(nick).download(session) for nick in profiles))
     await session.close()
 
