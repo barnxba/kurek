@@ -2,8 +2,7 @@ import argparse
 import asyncio
 
 from kurek import config
-from kurek.user import User
-from kurek.session import Session
+from kurek.session import Session, User
 from kurek.profile import Profile
 
 

@@ -1,6 +1,31 @@
 from yarl import URL
 
-from .balancer import Balancer
+from . import config
+
+
+class Balancer:
+    def __init__(self):
+        self._urls = None
+        self._api_urls = tuple(
+            (URL.build(scheme=config.scheme,
+                      host=f'{server}.{config.host}{config.api_root}')
+             for server in config.api_servers
+             ))
+        self._urls = self._get_url_generator()
+
+    def _get_url_generator(self):
+        if self._urls:
+            return self._urls
+        return self._url_generator()
+
+    def _url_generator(self):
+        while True:
+            for url in self._api_urls:
+                for _ in range (0, config.max_server_requests):
+                    yield url
+
+    def next_url(self):
+        return str(next(self._urls))
 
 
 class Command:
@@ -61,20 +86,20 @@ class Ajax:
         self._balancer = Balancer()
 
     @property
-    def url(self):
+    def _url(self):
         return self._balancer.next_url()
 
     def login(self, email, password, ltoken):
-        return Command(self.url).login(email, password, ltoken)
+        return Command(self._url).login(email, password, ltoken)
 
     def get_profile_photos(self, nick, token):
-        return Command(self.url).get_profile_photos(nick, token)
+        return Command(self._url).get_profile_photos(nick, token)
 
     def get_profile_videos(self, nick, token):
-        return Command(self.url).get_profile_videos(nick, token)
+        return Command(self._url).get_profile_videos(nick, token)
 
     def get_photo_info(self, data, ldata, token):
-        return Command(self.url).get_photo_info(data, ldata, token)
+        return Command(self._url).get_photo_info(data, ldata, token)
 
     def get_video_info(self, data, ldata, token):
-        return Command(self.url).get_video_info(data, ldata, token)
+        return Command(self._url).get_video_info(data, ldata, token)

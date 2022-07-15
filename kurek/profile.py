@@ -1,9 +1,9 @@
 import asyncio
 
 from . import config
-from .photo import Photo
-from .video import Video
+from .items import Photo, Video
 from .session import Session
+
 
 class Profile:
     def __init__(self, nick):
