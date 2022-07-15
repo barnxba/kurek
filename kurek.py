@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import logging
 
 from kurek import config
 from kurek.session import Session
@@ -65,12 +66,14 @@ Używaj odpowiedzialnie!
                                help='ściągnij tylko filmy')
     parser.add_argument('-d',
                         '--root-dir',
+                        dest='save_dir',
                         nargs=1,
                         type=str,
                         metavar='DIR',
                         help=f'folder zapisu ("{config.save_dir}")')
     parser.add_argument('-t',
                         '--dir-template',
+                        dest='save_template',
                         nargs=1,
                         type=str,
                         metavar='TEMPLATE',
@@ -81,6 +84,7 @@ Używaj odpowiedzialnie!
 ''')
     parser.add_argument('-n',
                         '--filename-template',
+                        dest='name_template',
                         nargs=1,
                         type=str,
                         metavar='TEMPLATE',
@@ -114,20 +118,30 @@ Używaj odpowiedzialnie!
     profiles = sorted([*args.profiles, *file_profiles],
                       key=lambda s: s.lower())
 
+    logging.basicConfig()
+    log = logging.getLogger('main')
+
     config.only_photos = args.only_photos
     config.only_videos = args.only_videos
-    if args.root_dir:
-        config.save_dir = args.root_dir[0]
-    if args.dir_template:
-        config.save_template = args.dir_template[0]
-    if args.filename_template:
-        config.name_template = args.filename_template[0]
+    if args.save_dir:
+        config.save_dir = args.save_dir[0]
+    if args.save_template:
+        config.save_template = args.save_template[0]
+    if args.name_template:
+        config.name_template = args.name_template[0]
+
+    log.debug(f'Run parameters:')
+    log.debug(f'\tonly_photos: {config.only_photos}')
+    log.debug(f'\tonly_videos: {config.only_videos}')
+    log.debug(f'\tsave_dir: {config.save_dir}')
+    log.debug(f'\tsave_template: {config.save_template}')
+    log.debug(f'\tname_template: {config.name_template}')
 
     session = Session(config.max_api_requests,
                       config.max_download_requests,
                       config.request_headers)
     await session.start()
-    await session.login(args.email, args.password)
+    await session.login(args.email[0], args.password[0])
     await asyncio.gather(*(Profile(nick).download(session) for nick in profiles))
     await session.close()
 
