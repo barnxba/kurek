@@ -8,5 +8,6 @@ request_headers = {
 max_server_requests = 5
 max_download_requests = 10
 max_api_requests = 50
-arguments = None
+only_photos = False
+only_videos = False
 save_dir = 'profiles'

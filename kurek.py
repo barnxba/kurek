@@ -1,9 +1,10 @@
 import argparse
 import asyncio
 
+from kurek import config
 from kurek.user import User
 from kurek.session import Session
-from kurek import config
+from kurek.profile import Profile
 
 
 async def main():
@@ -55,12 +56,12 @@ Używaj odpowiedzialnie!
     exclude_media = parser.add_mutually_exclusive_group()
     exclude_media.add_argument('-g',
                                '--gallery',
-                               dest='only_gallery',
+                               dest='only_photos',
                                action='store_true',
                                help="ściągnij tylko zdjęcia")
-    exclude_media.add_argument('-m',
-                               '--movies',
-                               dest="only_movies",
+    exclude_media.add_argument('-v',
+                               '--videos',
+                               dest="only_videos",
                                action='store_true',
                                help="ściągnij tylko filmy")
     parser.add_argument('profiles',
@@ -84,15 +85,16 @@ Używaj odpowiedzialnie!
     profiles = sorted([*args.profiles, *file_profiles],
                       key=lambda s: s.lower())
 
-    config.arguments = args
+    config.only_photos = args.only_photos
+    config.only_videos = args.only_videos
 
     user = User(args.email, args.password)
     session = Session(config.max_api_requests,
                       config.max_download_requests,
                       config.request_headers)
     await session.start()
-    await user.login(session)
-    await user.download_media(profiles)
+    await session.login(user)
+    await asyncio.gather(*(Profile(nick).download(session) for nick in profiles))
     await session.close()
 
 if __name__ == '__main__':

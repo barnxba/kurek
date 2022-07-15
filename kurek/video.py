@@ -5,20 +5,17 @@ from . import config
 from .session import Session
 
 
-class Photo:
+class Video:
     def __init__(self, json):
         self.entry = json
         self.json = None
 
     @property
     def url(self):
-        src_keys = {key: key
-                    for key in self.entry if key.startswith('src')}
-        size2key = {int("".join(c for c in value if c.isdecimal())): key
-                    for key, value in src_keys.items()}
-        sorted_sizes = sorted(list(size2key.keys()), reverse=True)
-        key = size2key[sorted_sizes[0]]
-        url = self.entry[key]
+        if self.json is None:
+            return None
+        key = 'mp4480' if 'mp4480' in self.json else 'mp4'
+        url = self.json[key]
         return url
 
     @property
@@ -43,14 +40,15 @@ class Photo:
         return URL(self.url).parts[-1][-3:]
 
     async def fetch(self, session: Session):
-        json = await session.get_photo_info(self.entry['data'],
+        json = await session.get_video_info(self.entry['data'],
                                             self.entry['lData'])
         self.json = json['item']
 
     async def download(self, session: Session):
-        path = f'{config.save_dir}/{self.owner}/photo/{self.filename}'
+        await self.fetch(session)
+        path = f'{config.save_dir}/{self.owner}/video/{self.filename}'
         if os.path.exists(path):
             print(f'File {path} exists. Skipping.')
             return
         await session.download(self.url, path)
-        print(f'Downloaded photo: {path}')
+        print(f'Downloaded video: {path}')
