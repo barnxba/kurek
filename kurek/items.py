@@ -1,14 +1,9 @@
 import os
-import logging
 
 from yarl import URL
 
 from . import config
 from .session import Session
-
-
-log = logging.getLogger('downloads')
-log.setLevel(logging.INFO)
 
 
 class _UserItemJson:
@@ -79,10 +74,10 @@ class UserItem:
     async def download(self, session: Session):
         path = os.path.join(self.savepath, self.filename)
         if os.path.exists(path):
-            log.warning(f'File {path} exists. Skipping.')
+            print(f'File {path} exists. Skipping.')
             return
         await session.download(self.url, path)
-        log.info(f'Downloaded {self.type}: {path}')
+        print(f'Downloaded {self.type}: {path}')
 
 
 class Photo(UserItem):

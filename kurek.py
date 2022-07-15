@@ -1,6 +1,5 @@
 import argparse
 import asyncio
-import logging
 
 from kurek import config
 from kurek.session import Session
@@ -130,8 +129,6 @@ Używaj odpowiedzialnie!
     profiles = sorted([*args.profiles, *file_profiles],
                       key=lambda s: s.lower())
 
-    logging.basicConfig()
-    log = logging.getLogger('main')
 
     config.only_photos = args.only_photos
     config.only_videos = args.only_videos
@@ -145,15 +142,6 @@ Używaj odpowiedzialnie!
         config.max_api_requests = args.api_limit[0]
     if args.download_limit:
         config.max_download_requests = args.download_limit[0]
-
-    log.debug(f'Run parameters:')
-    log.debug(f'\tonly_photos: {config.only_photos}')
-    log.debug(f'\tonly_videos: {config.only_videos}')
-    log.debug(f'\tsave_dir: {config.save_dir}')
-    log.debug(f'\tsave_template: {config.save_template}')
-    log.debug(f'\tname_template: {config.name_template}')
-    log.debug(f'\download_limit: {config.max_download_requests}')
-    log.debug(f'\tapi_limit: {config.max_api_requests}')
 
     session = Session(config.max_api_requests,
                       config.max_download_requests,
