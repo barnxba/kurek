@@ -27,4 +27,4 @@ requires-python = ">=3.8"
 Homepage = "https://github.com/barnxba/kurek"
 
 [project.scripts]
-kurek = "kurek.__main__:run_main"
+kurek = "kurek.__main__:run"
