@@ -1,6 +1,10 @@
 # Copyright (C) Bartosz Bartyzel 2022
 # Distributed under the MIT License.
 # License terms are at https://opensource.org/licenses/MIT and in LICENSE.md
+"""kurek - main script
+
+Parse command line arguments and prepare the operation.
+"""
 
 import asyncio
 import argparse
@@ -11,9 +15,12 @@ from kurek.profile import Profile
 
 
 async def main():
+    """Main coroutine
+    """
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description = '''
+        description="""
     oooo    oooo ooooo     ooo ooooooooo.   oooooooooooo oooo    oooo
     `888   .8P'  `888'     `8' `888   `Y88. `888'     `8 `888   .8P'
     888  d8'     888       8   888   .d88'  888          888  d8'
@@ -30,10 +37,10 @@ It uses libraries based on *asyncio* to rapidly download data - tasks are run
 concurrently so that saving massive amounts of data is very fast.
 A registered account on the site is required. Media quality is based on account
 status. Only the highest fidelity.
-        ''',
-        epilog = '''
+        """,
+        epilog="""
 Use responsibly! Use download and API limits. Live and let live.
-        '''
+        """
     )
 
     parser.add_argument('-u',
@@ -71,25 +78,25 @@ Use responsibly! Use download and API limits. Live and let live.
                         type=str,
                         default=config.save_dir,
                         metavar='DIR',
-                        help=f'base folder to save data to')
+                        help='base folder to save data to')
     parser.add_argument('-t',
                         '--dir-template',
                         dest='save_template',
                         type=str,
                         default=config.save_template,
                         metavar='STR',
-                        help='''save path template:
+                        help="""save path template:
     %%d - base directory
     %%p - profile name
     %%t - file type (photo/video)
-''')
+""")
     parser.add_argument('-n',
                         '--filename-template',
                         dest='name_template',
                         type=str,
                         default=config.name_template,
                         metavar='STR',
-                        help='''name template for files:
+                        help="""name template for files:
     %%t - title
     %%h - unique hash ID
     %%e - file extension
@@ -97,7 +104,7 @@ Use responsibly! Use download and API limits. Live and let live.
     %%d - description
 
     Empty strings are replaced with '_'.
-''')
+""")
     parser.add_argument('-a',
                         '--api-limit',
                         type=int,
@@ -107,7 +114,7 @@ Use responsibly! Use download and API limits. Live and let live.
     parser.add_argument('-l',
                         '--download-limit',
                         type=int,
-                        default=config.max_download_requests,
+                        default=config.max_downloads,
                         metavar='INT',
                         help='simultaneous downloads limit')
     parser.add_argument('profiles',
@@ -123,7 +130,7 @@ Use responsibly! Use download and API limits. Live and let live.
     # consolidate profile names
     file_profiles = []
     if args.file:
-        with open(args.file, 'r') as file:
+        with open(args.file, 'r', encoding='utf-8') as file:
             file_profiles = file.read().splitlines()
             if not file_profiles:
                 parser.error(f'file {args.file} is empty')
@@ -146,15 +153,20 @@ Use responsibly! Use download and API limits. Live and let live.
     email, password = args.email, args.password
 
     session = Session(config.max_api_requests,
-                      config.max_download_requests,
+                      config.max_downloads,
                       config.request_headers)
     await session.start()
     await session.login(email, password)
     await asyncio.gather(*(Profile(nick).download(session) for nick in profiles))
     await session.close()
 
+
 def run():
+    """Main entry point
+    """
+
     asyncio.run(main())
+
 
 if __name__ == '__main__':
     run()
