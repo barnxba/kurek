@@ -4,6 +4,7 @@
 
 import os
 
+
 host = 'zbiornik.com'
 scheme = 'https'
 api_servers = ('dzesika', 'brajanek', 'vaneska', 'denisek')

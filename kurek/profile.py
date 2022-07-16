@@ -5,8 +5,8 @@
 import asyncio
 
 from . import config
-from .items import Photo, Video
 from .session import Session
+from .items import Photo, Video
 
 
 class Profile:
