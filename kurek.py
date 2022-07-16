@@ -18,16 +18,17 @@ async def main():
     888  `88b.   `88.    .8'   888  `88b.   888       o  888  `88b.
     o888o  o888o    `YbodP'    o888o  o888o o888ooooood8 o888o  o888o
 
-Pobierz media z profilów na zbiornik.com
+Batch media downloader for zbiornik.com
 
-Skrypt pozwala na masowe pobieranie zdjęć i filmów z kont zarejestrowanych
-na zbiornik.com.
-Używa bibliotek opartych na asyncio, dzięki czemu media pobierane są
-bardzo szybko i równolegle. Wymagane jest konto na portalu. Media pobierane
-są w jakości zależnej od statusu konta użytkownika.
+This script is used to download photos and videos of profiles registered on
+zbiornik.com.
+It uses libraries based on *asyncio* to rapidly download data - tasks are run
+concurrently so that saving massive amounts of data is very fast.
+A registered account on the site is required. Media quality is based on account
+status. Only the highest fidelity.
         ''',
         epilog = '''
-Używaj odpowiedzialnie!
+Use responsibly! Use download and API limits. Live and let live.
         '''
     )
 
@@ -36,47 +37,47 @@ Używaj odpowiedzialnie!
                         type=str,
                         metavar='EMAIL',
                         required=True,
-                        help='email użytkownika')
+                        help='login email')
     parser.add_argument('-p',
                         '--pass',
                         dest='password',
                         type=str,
                         metavar='PASSWORD',
                         required=True,
-                        help='hasło użytkownika')
+                        help='login password')
     parser.add_argument('-f',
                         '--file',
                         type=str,
                         metavar='FILE',
-                        help='plik z listą nazw profilów')
+                        help='file with a list of profile names (1 name/line)')
     exclude_media = parser.add_mutually_exclusive_group()
     exclude_media.add_argument('-g',
                                '--gallery',
                                dest='only_photos',
                                action='store_true',
-                               help='ściągnij tylko zdjęcia')
+                               help='download photos only')
     exclude_media.add_argument('-v',
                                '--videos',
                                dest='only_videos',
                                action='store_true',
-                               help='ściągnij tylko filmy')
+                               help='download videos only')
     parser.add_argument('-d',
                         '--root-dir',
                         dest='save_dir',
                         type=str,
                         default=config.save_dir,
                         metavar='DIR',
-                        help=f'folder zapisu')
+                        help=f'base folder to save data to')
     parser.add_argument('-t',
                         '--dir-template',
                         dest='save_template',
                         type=str,
                         default=config.save_template,
                         metavar='STR',
-                        help='''wzorzec ścieżki zapisu:
-    %%d - root dir
-    %%p - nazwa profilu
-    %%t - typ pliku (photo/video)
+                        help='''save path template:
+    %%d - base directory
+    %%p - profile name
+    %%t - file type (photo/video)
 ''')
     parser.add_argument('-n',
                         '--filename-template',
@@ -84,36 +85,36 @@ Używaj odpowiedzialnie!
                         type=str,
                         default=config.name_template,
                         metavar='STR',
-                        help='''wzorzec nazwy pliku:
-    %%t - tytuł
-    %%h - unikatowy hash pliku
-    %%e - rozszerzenie
-    %%o - nazwa właściciela
-    %%d - opis
+                        help='''name template for files:
+    %%t - title
+    %%h - unique hash ID
+    %%e - file extension
+    %%o - owner's profile name
+    %%d - description
 
-    Puste stringi zamieniane są na '_'.
+    Empty strings are replaced with '_'.
 ''')
     parser.add_argument('-a',
                         '--api-limit',
                         type=int,
                         default=config.max_api_requests,
                         metavar='INT',
-                        help='limit zapytań API')
+                        help='API requests limit')
     parser.add_argument('-l',
                         '--download-limit',
                         type=int,
                         default=config.max_download_requests,
                         metavar='INT',
-                        help='limit jednoczesnych pobrań')
+                        help='simultaneous downloads limit')
     parser.add_argument('profiles',
                         nargs='*',
                         type=str,
                         metavar='PROFILE',
-                        help='nazwa profilu do ściągnięcia')
+                        help='list of profile names')
 
     args = parser.parse_args()
     if not args.profiles and not args.file:
-        parser.error('podaj nazwy profilów lub użyj opcji --file')
+        parser.error('no profile names given')
 
     # consolidate profile names
     file_profiles = []
@@ -121,7 +122,7 @@ Używaj odpowiedzialnie!
         with open(args.file, 'r') as file:
             file_profiles = file.read().splitlines()
             if not file_profiles:
-                parser.error(f'plik {args.file} jest pusty')
+                parser.error(f'file {args.file} is empty')
     profiles = sorted([*args.profiles, *file_profiles],
                       key=lambda s: s.lower())
 
