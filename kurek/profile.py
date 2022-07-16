@@ -1,3 +1,7 @@
+# Copyright (C) Bartosz Bartyzel 2022
+# Distributed under the MIT License.
+# License terms are at https://opensource.org/licenses/MIT and in LICENSE.md
+
 import asyncio
 
 from . import config
