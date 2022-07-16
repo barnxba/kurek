@@ -20,7 +20,7 @@ async def main():
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description = """
+        description="""
     oooo    oooo ooooo     ooo ooooooooo.   oooooooooooo oooo    oooo
     `888   .8P'  `888'     `8' `888   `Y88. `888'     `8 `888   .8P'
     888  d8'     888       8   888   .d88'  888          888  d8'
@@ -38,7 +38,7 @@ concurrently so that saving massive amounts of data is very fast.
 A registered account on the site is required. Media quality is based on account
 status. Only the highest fidelity.
         """,
-        epilog = """
+        epilog="""
 Use responsibly! Use download and API limits. Live and let live.
         """
     )
@@ -160,11 +160,13 @@ Use responsibly! Use download and API limits. Live and let live.
     await asyncio.gather(*(Profile(nick).download(session) for nick in profiles))
     await session.close()
 
+
 def run():
     """Main entry point
     """
 
     asyncio.run(main())
+
 
 if __name__ == '__main__':
     run()
