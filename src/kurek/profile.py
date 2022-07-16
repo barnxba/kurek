@@ -4,9 +4,9 @@
 
 import asyncio
 
-from . import config
-from .session import Session
-from .items import Photo, Video
+from kurek import config
+from kurek.session import Session
+from kurek.items import Photo, Video
 
 
 class Profile:

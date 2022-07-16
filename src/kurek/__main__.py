@@ -153,5 +153,8 @@ Use responsibly! Use download and API limits. Live and let live.
     await asyncio.gather(*(Profile(nick).download(session) for nick in profiles))
     await session.close()
 
+def run_main():
+    asyncio.run(main())
+
 if __name__ == '__main__':
     asyncio.run(main())

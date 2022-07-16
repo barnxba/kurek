@@ -10,8 +10,8 @@ from yarl import URL
 from bs4 import BeautifulSoup
 from aiohttp import ClientSession
 
-from . import config
-from .ajax import Ajax
+from kurek import config
+from kurek.ajax import Ajax
 
 
 class User:

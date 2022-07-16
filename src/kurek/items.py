@@ -6,8 +6,8 @@ import os
 
 from yarl import URL
 
-from . import config
-from .session import Session
+from kurek import config
+from kurek.session import Session
 
 
 class _UserItemJson:
