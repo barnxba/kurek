@@ -1,6 +1,11 @@
 # Copyright (C) Bartosz Bartyzel 2022
 # Distributed under the MIT License.
 # License terms are at https://opensource.org/licenses/MIT and in LICENSE.md
+"""Config module for holding script settings
+
+This module holds all the information needed to configure the download
+process.
+"""
 
 import os
 
@@ -13,7 +18,7 @@ request_headers = {
     'User-Agent': 'Mozilla/5.0',
 }
 max_server_requests = 5
-max_download_requests = 10
+max_downloads = 10
 max_api_requests = 50
 only_photos = False
 only_videos = False
