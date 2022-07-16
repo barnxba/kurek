@@ -33,7 +33,6 @@ Używaj odpowiedzialnie!
 
     parser.add_argument('-u',
                         '--email',
-                        nargs=1,
                         type=str,
                         metavar='EMAIL',
                         required=True,
@@ -41,14 +40,12 @@ Używaj odpowiedzialnie!
     parser.add_argument('-p',
                         '--pass',
                         dest='password',
-                        nargs=1,
                         type=str,
                         metavar='PASSWORD',
                         required=True,
                         help='hasło użytkownika')
     parser.add_argument('-f',
                         '--file',
-                        nargs=1,
                         type=str,
                         metavar='FILE',
                         help='plik z listą nazw profilów')
@@ -66,17 +63,17 @@ Używaj odpowiedzialnie!
     parser.add_argument('-d',
                         '--root-dir',
                         dest='save_dir',
-                        nargs=1,
                         type=str,
+                        default=config.save_dir,
                         metavar='DIR',
-                        help=f'folder zapisu [{config.save_dir}]')
+                        help=f'folder zapisu')
     parser.add_argument('-t',
                         '--dir-template',
                         dest='save_template',
-                        nargs=1,
                         type=str,
-                        metavar='TEMPLATE',
-                        help='''wzorzec ścieżki zapisu [%%d/%%p/%%t]):
+                        default=config.save_template,
+                        metavar='STR',
+                        help='''wzorzec ścieżki zapisu:
     %%d - root dir
     %%p - nazwa profilu
     %%t - typ pliku (photo/video)
@@ -84,10 +81,10 @@ Używaj odpowiedzialnie!
     parser.add_argument('-n',
                         '--filename-template',
                         dest='name_template',
-                        nargs=1,
                         type=str,
-                        metavar='TEMPLATE',
-                        help='''wzorzec nazwy pliku [%%t_%%h.%%e]):
+                        default=config.name_template,
+                        metavar='STR',
+                        help='''wzorzec nazwy pliku:
     %%t - tytuł
     %%h - unikatowy hash pliku
     %%e - rozszerzenie
@@ -98,14 +95,14 @@ Używaj odpowiedzialnie!
 ''')
     parser.add_argument('-a',
                         '--api-limit',
-                        nargs=1,
                         type=int,
+                        default=config.max_api_requests,
                         metavar='INT',
                         help='limit zapytań API')
     parser.add_argument('-l',
                         '--download-limit',
-                        nargs=1,
                         type=int,
+                        default=config.max_download_requests,
                         metavar='INT',
                         help='limit jednoczesnych pobrań')
     parser.add_argument('profiles',
@@ -121,27 +118,27 @@ Używaj odpowiedzialnie!
     # consolidate profile names
     file_profiles = []
     if args.file:
-        filename = args.file[0]
-        with open(filename, 'r') as file:
+        with open(args.file, 'r') as file:
             file_profiles = file.read().splitlines()
             if not file_profiles:
-                parser.error(f'plik {filename} jest pusty')
+                parser.error(f'plik {args.file} jest pusty')
     profiles = sorted([*args.profiles, *file_profiles],
                       key=lambda s: s.lower())
 
     config.only_photos = args.only_photos
     config.only_videos = args.only_videos
     if args.save_dir:
-        config.save_dir = args.save_dir[0]
+        config.save_dir = args.save_dir
     if args.save_template:
-        config.save_template = args.save_template[0]
+        config.save_template = args.save_template
     if args.name_template:
-        config.name_template = args.name_template[0]
+        config.name_template = args.name_template
     if args.api_limit:
-        config.max_api_requests = args.api_limit[0]
+        config.max_api_requests = args.api_limit
     if args.download_limit:
-        config.max_download_requests = args.download_limit[0]
-    email, password = args.email[0], args.password[0]
+        config.max_download_requests = args.download_limit
+
+    email, password = args.email, args.password
 
     session = Session(config.max_api_requests,
                       config.max_download_requests,
