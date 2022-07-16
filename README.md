@@ -1,4 +1,4 @@
-# kurek.py
+# kurek
 **kurek** lets users download data from [zbiornik.com](https://zbiornik.com).
 
 The script uses your private account login information to retrieve photos and 
