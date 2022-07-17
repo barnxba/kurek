@@ -9,7 +9,6 @@ downloading them easier.
 """
 
 import os
-import asyncio
 
 from yarl import URL
 
@@ -188,8 +187,6 @@ class Photo(Item):
         """
 
         super().__init__('photo', json)
-        data, ldata = json['data'], json['lData']
-        self.info = Info(self.type, data, ldata)
 
     @property
     def url(self):
@@ -231,21 +228,6 @@ class Video(Item):
         await self.info.fetch(session)
 
 
-class Collection(list):
-    """Collects JSON items into a list
-    """
-
-    async def fetch(self, session: Session):
-        """Fetch JSON of all items
-
-        Args:
-            session (Session): http request session
-        """
-
-        tasks = (item.fetch(session) for item in self)
-        await asyncio.gather(*tasks)
-
-
 class ProfilePhotos(Fetchable):
     """Collection of profile photos
     """
@@ -270,9 +252,7 @@ class ProfilePhotos(Fetchable):
 
         json = await session.get_profile_photos(self.owner)
         self.json = json['items']
-        self.items = Collection([Photo(item)
-                                for item in json['items']
-                                if item['access']])
+        self.items = [Photo(item) for item in json['items'] if item['access']]
 
 
 class ProfileVideos(Fetchable):
@@ -299,9 +279,7 @@ class ProfileVideos(Fetchable):
 
         json = await session.get_profile_videos(self.owner)
         self.json = json['items']
-        self.items = Collection([Video(item)
-                                for item in json['items']
-                                if item['access']])
+        self.items = [Video(item) for item in json['items'] if item['access']]
 
 
 class Profile(Fetchable):
