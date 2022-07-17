@@ -74,16 +74,14 @@ Use responsibly! Use download and API limits. Live and let live.
                                help='download videos only')
     parser.add_argument('-d',
                         '--root-dir',
-                        dest='save_dir',
                         type=str,
-                        default=config.save_dir,
+                        default=config.root_dir,
                         metavar='DIR',
                         help='base folder to save data to')
     parser.add_argument('-t',
-                        '--dir-template',
-                        dest='save_template',
+                        '--path-template',
                         type=str,
-                        default=config.save_template,
+                        default=config.path_template,
                         metavar='STR',
                         help="""save path template:
     %%d - base directory
@@ -91,8 +89,7 @@ Use responsibly! Use download and API limits. Live and let live.
     %%t - file type (photo/video)
 """)
     parser.add_argument('-n',
-                        '--filename-template',
-                        dest='name_template',
+                        '--name-template',
                         type=str,
                         default=config.name_template,
                         metavar='STR',
@@ -139,10 +136,10 @@ Use responsibly! Use download and API limits. Live and let live.
 
     config.only_photos = args.only_photos
     config.only_videos = args.only_videos
-    if args.save_dir:
-        config.save_dir = args.save_dir
-    if args.save_template:
-        config.save_template = args.save_template
+    if args.root_dir:
+        config.root_dir = args.root_dir
+    if args.path_template:
+        config.path_template = args.path_template
     if args.name_template:
         config.name_template = args.name_template
     if args.api_limit:

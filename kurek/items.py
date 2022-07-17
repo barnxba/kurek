@@ -91,8 +91,8 @@ class UserItem:
         """Directory path where the file will be saved
         """
 
-        template = config.save_template
-        return template.replace('%d', config.save_dir) \
+        template = config.path_template
+        return template.replace('%d', config.root_dir) \
                        .replace('%t', self.type) \
                        .replace('%p', self.owner)
 
