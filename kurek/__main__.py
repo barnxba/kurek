@@ -9,9 +9,9 @@ Parse command line arguments and prepare the operation.
 import asyncio
 import argparse
 
+from kurek import json
 from kurek import config
 from kurek.session import Session
-from kurek.profile import Profile
 
 
 async def main():
@@ -125,14 +125,14 @@ Use responsibly! Use download and API limits. Live and let live.
         parser.error('no profile names given')
 
     # consolidate profile names
-    file_profiles = []
+    file_nicks = []
     if args.file:
         with open(args.file, 'r', encoding='utf-8') as file:
-            file_profiles = file.read().splitlines()
-            if not file_profiles:
+            file_nicks = file.read().splitlines()
+            if not file_nicks:
                 parser.error(f'file {args.file} is empty')
-    profiles = sorted([*args.profiles, *file_profiles],
-                      key=lambda s: s.lower())
+    nicks = sorted([*args.profiles, *file_nicks],
+                   key=lambda s: s.lower())
 
     config.only_photos = args.only_photos
     config.only_videos = args.only_videos
@@ -154,7 +154,10 @@ Use responsibly! Use download and API limits. Live and let live.
                       config.request_headers)
     await session.start()
     await session.login(email, password)
-    await asyncio.gather(*(Profile(nick).download(session) for nick in profiles))
+    profiles = json.Collection([json.Profile(nick)
+                                for nick in nicks])
+    await asyncio.gather(*(profile.download(session)
+                           for profile in profiles))
     await session.close()
 
 

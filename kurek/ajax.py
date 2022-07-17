@@ -92,6 +92,25 @@ class Command:
         }
         return self._get_url(params)
 
+    def get_profile(self, nick, token):
+        """Build GetProfile command URL
+
+        Args:
+            nick (str): profile name
+            token (str): session token
+
+        Returns:
+            str: final request URL for command
+        """
+
+        params = {
+            'command': 'getProfilePhotos',
+            'nick': nick,
+            'actPath': f'/{nick}/',
+            'token': token
+        }
+        return self._get_url(params)
+
     def get_profile_photos(self, nick, token):
         """Build GetProfilePhotos command URL
 
@@ -198,6 +217,19 @@ class Ajax:
         """
 
         return Command(self._url).login(email, password, ltoken)
+
+    def get_profile(self, nick, token):
+        """Dispense GetProfile request URL
+
+        Args:
+            nick (str): profile name
+            token (str): session token
+
+        Returns:
+            _type_: _description_
+        """
+
+        return Command(self._url).get_profile(nick, token)
 
     def get_profile_photos(self, nick, token):
         """Dispense GetProfilePhotos request URL

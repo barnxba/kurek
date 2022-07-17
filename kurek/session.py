@@ -212,6 +212,19 @@ class Session:
         user.login(json)
         self._user = user
 
+    async def get_profile(self, nick):
+        """Get JSON object representing a profile
+
+        Args:
+            nick (str): profile name
+
+        Returns:
+            dict: JSON object
+        """
+
+        url = self._ajax.get_profile(nick, self._user.token)
+        return await self.get(url)
+
     async def get_profile_photos(self, nick):
         """Get JSON object representing profile's photo collection
 
