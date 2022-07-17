@@ -149,10 +149,11 @@ class Command:
         }
         return self._get_url(params)
 
-    def get_video_info(self, data, l_data, token):
-        """Build GetItemInfo command URL specifying video as item type
+    def get_item_info(self, itype, data, l_data, token):
+        """Build GetItemInfo command URL
 
         Args:
+            itype (str): string representation of type ('photo'/'video')
             data (str): 'data' item from video's JSON object
             l_data (str): 'lData' item from video's JSON object
             token (str): session token
@@ -164,27 +165,7 @@ class Command:
         params = {
             'command': 'getItemInfo',
             'data': data,
-            'actPath': f'/video/{l_data}',
-            'token': token
-        }
-        return self._get_url(params)
-
-    def get_photo_info(self, data, l_data, token):
-        """Build GetItemInfo command URL specifying photo as item type
-
-        Args:
-            data (str): 'data' item from photo's JSON object
-            l_data (str): 'lData' item from photo's JSON object
-            token (str): session token
-
-        Returns:
-            str: final request URL for command
-        """
-
-        params = {
-            'command': 'getItemInfo',
-            'data': data,
-            'actPath': f'/photo/{l_data}',
+            'actPath': f'/{itype}/{l_data}',
             'token': token
         }
         return self._get_url(params)
@@ -257,10 +238,11 @@ class Ajax:
 
         return Command(self._url).get_profile_videos(nick, token)
 
-    def get_photo_info(self, data, ldata, token):
-        """Dispense GetItemInfo command URL specifying photo as item type
+    def get_item_info(self, itype, data, ldata, token):
+        """Dispense GetItemInfo command URL
 
         Args:
+            itype (str): string representation of type ('photo'/'video')
             data (str): 'data' item from photo's JSON object
             l_data (str): 'lData' item from photo's JSON object
             token (str): session token
@@ -269,18 +251,4 @@ class Ajax:
             str: final request URL for command
         """
 
-        return Command(self._url).get_photo_info(data, ldata, token)
-
-    def get_video_info(self, data, ldata, token):
-        """Dispense GetItemInfo command URL specifying video as item type
-
-        Args:
-            data (str): 'data' item from video's JSON object
-            l_data (str): 'lData' item from video's JSON object
-            token (str): session token
-
-        Returns:
-            str: final request URL for command
-        """
-
-        return Command(self._url).get_video_info(data, ldata, token)
+        return Command(self._url).get_item_info(itype, data, ldata, token)

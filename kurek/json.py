@@ -10,16 +10,15 @@ downloading them easier.
 
 import os
 import asyncio
-import itertools
 
 from yarl import URL
 
 from kurek import config
-from kurek.session import Session
+from kurek.http import Session
 
 
-class Item:
-    """"Base JSON item class
+class Fetchable:
+    """"Base class for fetchable JSON objects
     """
 
     def __init__(self, json=None):
@@ -31,15 +30,8 @@ class Item:
 
         self.json = json
 
-    @property
-    def owner(self):
-        """Owner's profile name
-        """
-
-        return self.json['nick']
-
     async def fetch(self, session: Session):
-        """Fetch JSON data from server using http session
+        """Fetch JSON data from server using http session - override in child
 
         Args:
             session (Session): http request session
@@ -48,37 +40,60 @@ class Item:
         _ = (session)
 
 
-class Collection(list):
-    """Collects JSON items into a list
+class Info(Fetchable):
+    """Base class for info items
     """
 
+    def __init__(self, itype, data, ldata):
+        """Base class for info item JSON
+
+        Args:
+            itype (str): type of item (photo/video)
+            data (str): data hash from parent JSON item
+            ldata (_type_): lData hash from parent JSON item
+        """
+
+        super().__init__()
+        self._data = data
+        self._ldata = ldata
+        self._type = itype
+
     async def fetch(self, session: Session):
-        """Fetch JSON of all items
+        """Fetch JSON data using http session
 
         Args:
             session (Session): http request session
         """
 
-        tasks = (item.fetch(session) for item in self)
-        await asyncio.gather(*tasks)
+        json = await session.get_item_info(self._type,
+                                           self._data,
+                                           self._ldata)
+        self.json = json['item']
 
 
-class UrlItem(Item):
+class Item(Fetchable):
     """Base class for JSON downloadable items
     """
 
-    def __init__(self, json=None, info_json=None, item_type: str = None):
-        """Create a downloadable item representation
+    def __init__(self, item_type, json):
+        """Create a new item with additional info
 
         Args:
-            json (dict, optional): item JSON. Defaults to None.
-            info_json (dict, optional): item info JSON. Defaults to None.
-            item_type (str, optional): item type string. Defaults to None.
+            item_type (str): item type string (photo/video)
+            json (dict): JSON object representing basic item summary
         """
 
         super().__init__(json)
-        self.info = info_json
         self.type = item_type
+        data, ldata = json['data'], json['lData']
+        self.info = Info(self.type, data, ldata)
+
+    @property
+    def owner(self):
+        """Item owner's nick
+        """
+
+        return self.json['nick']
 
     @property
     def url(self):
@@ -115,6 +130,7 @@ class UrlItem(Item):
 
         return URL(self.url).parts[-1][-3:]
 
+    # TODO: Remove filename, savepath, download and move to separate class
     @property
     def filename(self):
         """File name used for saving the file - based on configured template
@@ -160,37 +176,7 @@ class UrlItem(Item):
         print(f'Downloaded {self.type}: {path}')
 
 
-class InfoItem(Item):
-    """Base class for info items
-    """
-
-    def __init__(self, data, ldata):
-        """Base class for info item JSON
-
-        Args:
-            data (str): data hash from parent JSON item
-            ldata (_type_): lData hash from parent JSON item
-        """
-
-        super().__init__()
-        self._data = data
-        self._ldata = ldata
-
-
-class PhotoInfo(InfoItem):
-    """Detailed info JSON representation for photos
-    """
-
-    async def fetch(self, session: Session):
-        """Fetch JSON data using http session
-        """
-
-        json = await session.get_photo_info(self._data,
-                                            self._ldata)
-        self.json = json['item']
-
-
-class Photo(UrlItem):
+class Photo(Item):
     """Represents a photo
     """
 
@@ -201,7 +187,9 @@ class Photo(UrlItem):
             json (str): JSON object representing a single photo
         """
 
-        super().__init__(json, None, 'photo')
+        super().__init__('photo', json)
+        data, ldata = json['data'], json['lData']
+        self.info = Info(self.type, data, ldata)
 
     @property
     def url(self):
@@ -215,21 +203,10 @@ class Photo(UrlItem):
         return url
 
     async def fetch(self, session: Session):
-        self.info = PhotoInfo(self.json['data'],
-                              self.json['lData'])
+        await self.info.fetch(session)
 
 
-class VideoInfo(InfoItem):
-    """Detailed info JSON representation for videos
-    """
-
-    async def fetch(self, session: Session):
-        json = await session.get_video_info(self._data,
-                                            self._ldata)
-        self.json = json['item']
-
-
-class Video(UrlItem):
+class Video(Item):
     """Represents a downloadable video
     """
 
@@ -240,7 +217,7 @@ class Video(UrlItem):
             json (str): JSON object representing a single video
         """
 
-        super().__init__(json, None, 'video')
+        super().__init__('video', json)
 
     @property
     def url(self):
@@ -251,17 +228,88 @@ class Video(UrlItem):
         return url
 
     async def fetch(self, session: Session):
-        self.info = VideoInfo(self.json['data'],
-                              self.json['lData'])
         await self.info.fetch(session)
 
 
-class Profile(Item):
-    """Represents a profile
+class Collection(list):
+    """Collects JSON items into a list
+    """
+
+    async def fetch(self, session: Session):
+        """Fetch JSON of all items
+
+        Args:
+            session (Session): http request session
+        """
+
+        tasks = (item.fetch(session) for item in self)
+        await asyncio.gather(*tasks)
+
+
+class ProfilePhotos(Fetchable):
+    """Collection of profile photos
+    """
+
+    def __init__(self, owner):
+        """Create collection of profile photos
+
+        Args:
+            owner (str): profile name
+        """
+
+        super().__init__()
+        self.owner = owner
+        self.items = None
+
+    async def fetch(self, session: Session):
+        """Fetch collection JSON info
+
+        Args:
+            session (Session): http request session
+        """
+
+        json = await session.get_profile_photos(self.owner)
+        self.json = json['items']
+        self.items = Collection([Photo(item)
+                                for item in json['items']
+                                if item['access']])
+
+
+class ProfileVideos(Fetchable):
+    """Collection of profile videos
+    """
+
+    def __init__(self, owner):
+        """Create collection of profile videos
+
+        Args:
+            owner (str): profile name
+        """
+
+        super().__init__()
+        self.owner = owner
+        self.items = None
+
+    async def fetch(self, session: Session):
+        """Fetch collection JSON info
+
+        Args:
+            session (Session): http request session
+        """
+
+        json = await session.get_profile_videos(self.owner)
+        self.json = json['items']
+        self.items = Collection([Video(item)
+                                for item in json['items']
+                                if item['access']])
+
+
+class Profile(Fetchable):
+    """JSON object of a profile
     """
 
     def __init__(self, nick):
-        """Create a new Profile represented by a nick
+        """Create new profile representation
 
         Args:
             nick (str): profile name
@@ -269,8 +317,8 @@ class Profile(Item):
 
         super().__init__()
         self._nick = nick
-        self._photos = None
-        self._videos = None
+        self._photos = ProfilePhotos(self.nick)
+        self._videos = ProfileVideos(self.nick)
 
     @property
     def nick(self):
@@ -303,66 +351,11 @@ class Profile(Item):
         return self._videos
 
     async def fetch(self, session: Session):
-        """Fetch profile JSON data using http request session
+        """Fetch JSON data using http session
 
         Args:
             session (Session): request session
         """
 
-        self.json = await session.get_profile(self.nick)
-
-    async def fetch_photos(self, session: Session):
-        """Fetch photo collection JSON data using http request session
-
-        Args:
-            session (Session): request session
-
-        Returns:
-            list: list of Photo objects
-        """
-
-        json = await session.get_profile_photos(self.nick)
-        self._photos = Collection([Photo(item)
-                                   for item in json['items']
-                                   if item['access']])
-        return self._photos
-
-    async def fetch_videos(self, session: Session):
-        """Fetch video collection JSON data using http request session
-
-        Args:
-            session (Session): http request session
-
-        Returns:
-            list: list of Video objects
-        """
-
-        json = await session.get_profile_videos(self.nick)
-        self._videos = Collection([Video(item)
-                                   for item in json['items']
-                                   if item['access']])
-        return self._videos
-
-    async def download(self, session: Session):
-        """Download media and save to file
-
-        Args:
-            session (Session): http request session
-        """
-
-        tasks = []
-        if not config.only_videos:
-            tasks.append(self.fetch_photos(session))
-        if not config.only_photos:
-            tasks.append(self.fetch_videos(session))
-        await asyncio.gather(*tasks)
-
-        if config.only_photos:
-            tasks = (photo.download(session) for photo in self._photos)
-        elif config.only_videos:
-            tasks = (video.download(session) for video in self._videos)
-        else:
-            tasks = itertools.chain(
-                (photo.download(session) for photo in self._photos),
-                (video.download(session) for video in self._videos))
-        await asyncio.gather(*tasks)
+        json = await session.get_profile(self._nick)
+        self.json = json['profile']

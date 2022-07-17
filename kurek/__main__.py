@@ -9,9 +9,9 @@ Parse command line arguments and prepare the operation.
 import asyncio
 import argparse
 
-from kurek import json
 from kurek import config
-from kurek.session import Session
+from kurek.http import Session
+from kurek.downloaders import ProfileDownloader
 
 
 async def main():
@@ -134,30 +134,25 @@ Use responsibly! Use download and API limits. Live and let live.
     nicks = sorted([*args.profiles, *file_nicks],
                    key=lambda s: s.lower())
 
-    config.only_photos = args.only_photos
-    config.only_videos = args.only_videos
+    # TODO: handle this better
     if args.root_dir:
         config.root_dir = args.root_dir
     if args.path_template:
         config.path_template = args.path_template
     if args.name_template:
         config.name_template = args.name_template
-    if args.api_limit:
-        config.max_api_requests = args.api_limit
-    if args.download_limit:
-        config.max_download_requests = args.download_limit
+
+    photos = not args.only_videos
+    videos = not args.only_photos
 
     email, password = args.email, args.password
 
-    session = Session(config.max_api_requests,
-                      config.max_downloads,
+    session = Session(args.api_limit,
+                      args.download_limit,
                       config.request_headers)
     await session.start()
     await session.login(email, password)
-    profiles = json.Collection([json.Profile(nick)
-                                for nick in nicks])
-    await asyncio.gather(*(profile.download(session)
-                           for profile in profiles))
+    await ProfileDownloader(nicks).download(session, photos, videos)
     await session.close()
 
 

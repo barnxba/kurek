@@ -251,10 +251,11 @@ class Session:
         url = self._ajax.get_profile_videos(nick, self._user.token)
         return await self.get(url)
 
-    async def get_photo_info(self, data, ldata):
+    async def get_item_info(self, itype, data, ldata):
         """Get JSON object representing a single photo
 
         Args:
+            itype (str): string representation of type ('photo'/'video')
             data (str): photo's data hash obtained from JSON
             ldata (str): photo's lData hash obtained from JSON
 
@@ -262,19 +263,5 @@ class Session:
             dict: JSON object
         """
 
-        url = self._ajax.get_photo_info(data, ldata, self._user.token)
-        return await self.get(url)
-
-    async def get_video_info(self, data, ldata):
-        """Get JSON object representing a single video
-
-        Args:
-            data (str): video's data hash obtained from JSON
-            ldata (str): video's lData hash obtained from JSON
-
-        Returns:
-            dict: JSON object
-        """
-
-        url = self._ajax.get_video_info(data, ldata, self._user.token)
+        url = self._ajax.get_item_info(itype, data, ldata, self._user.token)
         return await self.get(url)
