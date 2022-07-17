@@ -8,7 +8,6 @@ the downloads concurrently.
 """
 
 import asyncio
-import itertools
 
 from kurek import json
 from kurek.http import Session
@@ -51,30 +50,32 @@ class ProfileDownloader(Downloader):
         """
 
         profiles = (json.Profile(nick) for nick in self._nicks)
-        tasks = (self._download_profile(profile, session, photos, videos)
+        tasks = (self._profile_task(profile, session, photos, videos)
                  for profile in profiles)
         await asyncio.gather(*tasks)
 
-    async def _download_photo(self, photo: json.Photo, session: Session):
+    async def _photo_task(self, photo: json.Photo, session: Session):
         await photo.download(session)
 
-    async def _download_video(self, video: json.Video, session: Session):
+    async def _video_task(self, video: json.Video, session: Session):
         await video.fetch(session)
         await video.download(session)
 
-    async def _download_profile(self,
-                                profile: json.Profile,
-                                session: Session,
-                                photos: bool,
-                                videos: bool):
+    async def _profile_task(self,
+                            profile: json.Profile,
+                            session: Session,
+                            photos: bool,
+                            videos: bool):
+        photo_tasks = []
+        video_tasks = []
+
         if photos:
             await profile.photos.fetch(session)
+            photo_tasks = (self._photo_task(photo, session)
+                           for photo in profile.photos.items)
         if videos:
             await profile.videos.fetch(session)
+            video_tasks = (self._video_task(video, session)
+                           for video in profile.videos.items)
 
-        photo_tasks = (self._download_photo(photo, session)
-                       for photo in profile.photos.items)
-        video_tasks = (self._download_video(video, session)
-                       for video in profile.videos.items)
-
-        await asyncio.gather(*itertools.chain(photo_tasks, video_tasks))
+        await asyncio.gather(*photo_tasks, *video_tasks)
