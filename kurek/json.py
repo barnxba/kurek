@@ -16,8 +16,12 @@ from kurek import config
 from kurek.http import Session
 
 
+# TODO: use proper interface (virtual class)
 class Fetchable:
     """"Base class for fetchable JSON objects
+
+    Each object has a 'json' attribute. It can be passed in the constructor
+    or fetched using the 'fetch' method.
     """
 
     def __init__(self, json=None):
@@ -39,8 +43,14 @@ class Fetchable:
         _ = (session)
 
 
-class Info(Fetchable):
+class ItemInfo(Fetchable):
     """Base class for info items
+
+    ItemInfo is a JSON structured connectd to each photo and video. You can
+    obtain it via the GetItemInfo AJAX command. It has additional info about
+    the resource, such as urls. First you need to get the media list via
+    GetProfilePhotos or GetProfileVideos and then use data and lData to
+    fetch the ItemInfo.
     """
 
     def __init__(self, itype, data, ldata):
@@ -72,6 +82,10 @@ class Info(Fetchable):
 
 class Item(Fetchable):
     """Base class for JSON downloadable items
+
+    An item is either a photo or a video. This class holds the basic info.
+    More fields can be obtained with using the ItemInfo object tied to objects
+    of this class.
     """
 
     def __init__(self, item_type, json):
@@ -85,7 +99,7 @@ class Item(Fetchable):
         super().__init__(json)
         self.type = item_type
         data, ldata = json['data'], json['lData']
-        self.info = Info(self.type, data, ldata)
+        self.info = ItemInfo(self.type, data, ldata)
 
     @property
     def owner(self):

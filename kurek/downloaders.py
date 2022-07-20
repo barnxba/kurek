@@ -13,6 +13,7 @@ from kurek import json
 from kurek.http import Session
 
 
+# TODO: use proper interface (virtual class)
 class Downloader:
     """Base Downloader class
     """
